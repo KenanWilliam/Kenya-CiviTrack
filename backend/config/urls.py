@@ -29,6 +29,8 @@ urlpatterns = [
     # JWT auth
     path("api/auth/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/auth/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("api/auth/", include("accounts.urls")),  # <-- adds /api/auth/register/
+
 
     path("api/", include("projects.urls")),    
     ]

@@ -268,3 +268,67 @@ button, input, select { font: inherit; color: inherit; }
   background: rgba(255,255,255,0.05);
   border-color: rgba(255,255,255,0.14);
 }
+
+
+.authWrap{
+  min-height: calc(100vh - 90px);
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+
+.authCard{
+  width: min(440px, 100%);
+  padding: 16px;
+}
+
+.authHeader{
+  margin-bottom: 10px;
+}
+.authTitle{
+  font-size: 22px;
+  font-weight: 900;
+  margin: 0;
+}
+.authSub{
+  margin: 6px 0 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.authForm{
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.authInput{
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.03);
+  outline: none;
+}
+
+.authRow{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.authError{
+  color: #ffd1d1;
+  border: 1px solid rgba(255,107,107,0.35);
+  background: rgba(255,107,107,0.08);
+  padding: 10px 12px;
+  border-radius: 12px;
+  white-space: pre-wrap;
+}
+
+.link{
+  color: #cfe1ff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

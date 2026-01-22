@@ -16,14 +16,22 @@ export async function login(username: string, password: string): Promise<Tokens>
   return data;
 }
 
-export async function refreshAccessToken(refresh: string): Promise<{ access: string }> {
-  const res = await fetch(`${API_BASE}/api/auth/refresh/`, {
+export async function registerAccount(payload: {
+  username: string;
+  email?: string;
+  password: string;
+  password2: string;
+}): Promise<Tokens> {
+  const res = await fetch(`${API_BASE}/api/auth/register/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ refresh }),
+    body: JSON.stringify(payload),
   });
 
   if (!res.ok) throw new Error(await res.text());
 
-  return (await res.json()) as { access: string };
+  // Backend returns tokens directly
+  const data = (await res.json()) as { access: string; refresh: string };
+  setTokens({ access: data.access, refresh: data.refresh });
+  return { access: data.access, refresh: data.refresh };
 }

@@ -3,6 +3,7 @@ import AppShell from "./components/AppShell";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 import LandingPage from "./pages/LandingPage";
+import SignupPage from "./pages/SignupPage";
 import ExplorePage from "./pages/ExplorePage";
 import ProjectsPage from "./pages/ProjectsPage";
 import ProjectDetailPage from "./pages/ProjectDetails";
@@ -29,6 +30,8 @@ export default function App() {
 
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPlaceholder />} />
+          <Route path="/signup" element={<SignupPage />} />
+
 
           {/* Protected routes */}
           <Route element={<ProtectedRoute />}>
