@@ -1,27 +1,43 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import LoginPage from "./pages/LoginPage";
+import AppShell from "./components/AppShell";
+import ProtectedRoute from "./components/ProtectedRoute";
+
+import LandingPage from "./pages/LandingPage";
+import ExplorePage from "./pages/ExplorePage";
 import ProjectsPage from "./pages/ProjectsPage";
+import ProjectDetailPage from "./pages/ProjectDetails";
+
+import LoginPage from "./pages/LoginPage";
 import MapPage from "./pages/MapsPage";
 import AdminPage from "./pages/AdminPage";
-import ProtectedRoute from "./components/ProtectedRoute";
-import AppShell from "./components/AppShell";
+
+// Temporary placeholder until we implement it
+function SignupPlaceholder() {
+  return <div className="card" style={{ padding: 16 }}>Signup page next.</div>;
+}
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={<LoginPage />} />
+        {/* Public + shared layout */}
+        <Route element={<AppShell />}>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/explore" element={<ExplorePage />} />
+          <Route path="/projects" element={<ProjectsPage />} />
+          <Route path="/projects/:id" element={<ProjectDetailPage />} />
 
-        <Route element={<ProtectedRoute />}>
-          <Route element={<AppShell />}>
-            <Route path="/" element={<Navigate to="/projects" replace />} />
-            <Route path="/projects" element={<ProjectsPage />} />
-            <Route path="/map" element={<MapPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPlaceholder />} />
+
+          {/* Protected routes */}
+          <Route element={<ProtectedRoute />}>
             <Route path="/admin" element={<AdminPage />} />
+            <Route path="/map" element={<MapPage />} />
           </Route>
         </Route>
 
-        <Route path="*" element={<Navigate to="/projects" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );
