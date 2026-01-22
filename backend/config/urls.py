@@ -32,5 +32,7 @@ urlpatterns = [
     path("api/auth/", include("accounts.urls")),  # <-- adds /api/auth/register/
 
 
-    path("api/", include("projects.urls")),    
+    path("api/", include("projects.urls")), 
+    path("api/", include("analytics.urls")),
+   
     ]

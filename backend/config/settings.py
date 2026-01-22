@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     "projects",
     "feedback",
     "reports",
+    "analytics",
 ]
 
 MIDDLEWARE = [

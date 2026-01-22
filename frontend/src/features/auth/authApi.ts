@@ -1,6 +1,30 @@
-import { setTokens, type Tokens } from "./tokens";
+import { getRefreshToken, setTokens, clearTokens, type Tokens } from "./tokens";
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? "http://127.0.0.1:8000";
+
+export async function refreshAccessToken(): Promise<string> {
+  const refresh = getRefreshToken();
+  if (!refresh) throw new Error("No refresh token");
+
+  const res = await fetch(`${API_BASE}/api/auth/refresh/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ refresh }),
+  });
+
+  if (!res.ok) {
+    clearTokens();
+    throw new Error("Refresh token invalid");
+  }
+
+  const data = (await res.json()) as { access: string };
+
+  // keep existing refresh, update only access
+  const updated: Tokens = { access: data.access, refresh };
+  setTokens(updated);
+
+  return data.access;
+}
 
 export async function login(username: string, password: string): Promise<Tokens> {
   const res = await fetch(`${API_BASE}/api/auth/token/`, {

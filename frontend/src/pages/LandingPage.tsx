@@ -1,12 +1,17 @@
+import { isLoggedIn } from "../features/auth/tokens";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { fetchProjects, type Project } from "../features/projects/projectsApi";
 import StatusPill from "../components/StatusPill";
+import { trackSearch } from "../features/analytics/analyticsApi";
+
 
 export default function LandingPage() {
   const nav = useNavigate();
   const [items, setItems] = useState<Project[]>([]);
   const [q, setQ] = useState("");
+  const authed = isLoggedIn();
+
 
   useEffect(() => {
     (async () => {
@@ -34,6 +39,10 @@ export default function LandingPage() {
   function onSearch(e: React.FormEvent) {
     e.preventDefault();
     const term = q.trim();
+
+    // ✅ track landing-page searches (only if not empty)
+    if (term) trackSearch(term);
+
     nav(`/explore${term ? `?q=${encodeURIComponent(term)}` : ""}`);
   }
 
@@ -58,9 +67,21 @@ export default function LandingPage() {
           </form>
 
           <div className="heroLinks">
-            <Link className="btn" to="/explore">Explore</Link>
-            <Link className="btn" to="/projects">Browse all projects</Link>
-          </div>
+          <Link className="btn" to="/explore">Explore</Link>
+
+          {authed ? (
+            <>
+              <Link className="btn btnPrimary" to="/projects">Go to Projects</Link>
+              <Link className="btn" to="/map">Open Map</Link>
+            </>
+          ) : (
+            <>
+              <Link className="btn btnPrimary" to="/login">Sign in</Link>
+              <Link className="btn" to="/signup">Create account</Link>
+              <Link className="btn" to="/projects">Browse all projects</Link>
+            </>
+          )}
+        </div>
         </div>
 
         <div className="heroRight">

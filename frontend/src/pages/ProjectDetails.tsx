@@ -3,6 +3,8 @@ import { Link, useParams } from "react-router-dom";
 import { fetchProject, type Project } from "../features/projects/projectsApi";
 import StatusPill from "../components/StatusPill";
 import { isLoggedIn } from "../features/auth/tokens";
+import { trackProjectView } from "../features/analytics/analyticsApi";
+
 
 export default function ProjectDetails() {
   const { id } = useParams();
@@ -16,6 +18,9 @@ export default function ProjectDetails() {
         if (!id) return;
         const data = await fetchProject(id);
         setItem(data);
+        
+        // ✅ track that this project was opened
+        trackProjectView(Number(id));
       } catch (e: any) {
         setErr(e?.message ?? "Failed to load project");
       }

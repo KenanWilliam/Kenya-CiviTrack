@@ -3,19 +3,14 @@ import AppShell from "./components/AppShell";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 import LandingPage from "./pages/LandingPage";
-import SignupPage from "./pages/SignupPage";
 import ExplorePage from "./pages/ExplorePage";
 import ProjectsPage from "./pages/ProjectsPage";
-import ProjectDetailPage from "./pages/ProjectDetails";
+import ProjectDetails from "./pages/ProjectDetails";
 
 import LoginPage from "./pages/LoginPage";
+import SignupPage from "./pages/SignupPage";
 import MapPage from "./pages/MapsPage";
 import AdminPage from "./pages/AdminPage";
-
-// Temporary placeholder until we implement it
-function SignupPlaceholder() {
-  return <div className="card" style={{ padding: 16 }}>Signup page next.</div>;
-}
 
 export default function App() {
   return (
@@ -23,15 +18,17 @@ export default function App() {
       <Routes>
         {/* Public + shared layout */}
         <Route element={<AppShell />}>
+          {/* Home should open by default */}
           <Route path="/" element={<LandingPage />} />
+
+          {/* Public browsing */}
           <Route path="/explore" element={<ExplorePage />} />
           <Route path="/projects" element={<ProjectsPage />} />
-          <Route path="/projects/:id" element={<ProjectDetailPage />} />
+          <Route path="/projects/:id" element={<ProjectDetails />} />
 
+          {/* Auth */}
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPlaceholder />} />
           <Route path="/signup" element={<SignupPage />} />
-
 
           {/* Protected routes */}
           <Route element={<ProtectedRoute />}>
@@ -40,6 +37,7 @@ export default function App() {
           </Route>
         </Route>
 
+        {/* Catch-all */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
