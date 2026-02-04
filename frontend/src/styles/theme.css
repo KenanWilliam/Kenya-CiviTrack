@@ -1,0 +1,33 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+:root {
+  --font-body: "Manrope", system-ui, -apple-system, Segoe UI, Arial, sans-serif;
+  --font-display: "Space Grotesk", "Manrope", system-ui, -apple-system, Segoe UI, Arial, sans-serif;
+
+  --bg: #0a0f1c;
+  --bg-2: #0f1629;
+  --glass: rgba(18, 26, 48, 0.72);
+  --glass-2: rgba(19, 30, 56, 0.55);
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+
+  --text: #e9f0ff;
+  --muted: #a9b6d6;
+  --muted-2: #8f9cbc;
+
+  --emerald: #34d399;
+  --amber: #f59e0b;
+  --accent: #34d399;
+  --accent-2: #f59e0b;
+  --danger: #ff6b6b;
+
+  --radius-lg: 22px;
+  --radius-md: 16px;
+  --radius-sm: 12px;
+
+  --shadow-lg: 0 30px 70px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 16px 40px rgba(0, 0, 0, 0.28);
+  --shadow-sm: 0 8px 20px rgba(0, 0, 0, 0.2);
+
+  --glass-blur: 14px;
+}

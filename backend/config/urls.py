@@ -19,20 +19,15 @@ from django.urls import path, include
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .views import health
 
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-
 urlpatterns = [
     path("admin/", admin.site.urls),
-
     path("api/health/", health),
-
     # JWT auth
     path("api/auth/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/auth/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/auth/", include("accounts.urls")),  # <-- adds /api/auth/register/
-
-
-    path("api/", include("projects.urls")), 
+    path("api/", include("projects.urls")),
     path("api/", include("analytics.urls")),
-   
-    ]
+    path("api/", include("feedback.urls")),
+    path("api/", include("reports.urls")),
+]

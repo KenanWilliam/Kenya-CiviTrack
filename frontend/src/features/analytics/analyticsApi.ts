@@ -22,7 +22,9 @@ export type PulseData = {
   total_projects: number;
   status_counts: { status: string; count: number }[];
   top_searches: { query: string; count: number }[];
-  top_viewed: { project_id: number; project__title: string; project__status: string; project__county: string | null; count: number }[];
+  top_viewed: { project_id: number; project__title: string; project__status: string | null; project__county: string | null; count: number }[];
+  top_searches_7d: { query: string; count: number }[];
+  trending_projects_7d: { project_id: number; project__title: string; project__status: string | null; project__county: string | null; count: number }[];
   recent_searches: { query: string; created_at: string }[];
   recent_views: { project_id: number; project__title: string; created_at: string }[];
   total_budget: number;

@@ -1,6 +1,7 @@
-from django.shortcuts import render
+from datetime import timedelta
 
 from django.db.models import Count
+from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
@@ -13,8 +14,9 @@ class TrackSearchView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        q = (request.data.get("query") or "")[:200]
-        SearchEvent.objects.create(query=q)
+        q = (request.data.get("query") or "").strip()[:200]
+        if q:
+            SearchEvent.objects.create(query=q)
         return Response({"ok": True}, status=status.HTTP_201_CREATED)
 
 class TrackProjectView(APIView):
@@ -22,11 +24,19 @@ class TrackProjectView(APIView):
 
     def post(self, request):
         pid = request.data.get("project_id")
-        if not pid:
+        if pid is None:
             return Response({"error": "project_id required"}, status=400)
 
         try:
-            p = Project.objects.get(id=pid)
+            pid_int = int(pid)
+        except (TypeError, ValueError):
+            return Response({"error": "project_id must be an integer"}, status=400)
+
+        if pid_int <= 0:
+            return Response({"error": "project_id must be positive"}, status=400)
+
+        try:
+            p = Project.objects.get(id=pid_int)
         except Project.DoesNotExist:
             return Response({"error": "project not found"}, status=404)
 
@@ -38,6 +48,7 @@ class PulseView(APIView):
 
     def get(self, request):
         total_projects = Project.objects.count()
+        since = timezone.now() - timedelta(days=7)
 
         status_counts = (
             Project.objects.values("status")
@@ -54,6 +65,21 @@ class PulseView(APIView):
 
         top_viewed = (
             ProjectViewEvent.objects.values("project_id", "project__title", "project__status", "project__county")
+            .annotate(count=Count("id"))
+            .order_by("-count")[:10]
+        )
+
+        top_searches_7d = (
+            SearchEvent.objects.filter(created_at__gte=since)
+            .exclude(query="")
+            .values("query")
+            .annotate(count=Count("id"))
+            .order_by("-count")[:10]
+        )
+
+        trending_projects_7d = (
+            ProjectViewEvent.objects.filter(created_at__gte=since)
+            .values("project_id", "project__title", "project__status", "project__county")
             .annotate(count=Count("id"))
             .order_by("-count")[:10]
         )
@@ -88,6 +114,8 @@ class PulseView(APIView):
             "status_counts": list(status_counts),
             "top_searches": list(top_searches),
             "top_viewed": list(top_viewed),
+            "top_searches_7d": list(top_searches_7d),
+            "trending_projects_7d": list(trending_projects_7d),
             "recent_searches": recent_searches,
             "recent_views": recent_views,
             "total_budget": total_budget,

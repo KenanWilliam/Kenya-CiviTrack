@@ -1,5 +1,6 @@
 import { getAccessToken, getRefreshToken, clearTokens } from "../features/auth/tokens";
 import { refreshAccessToken } from "../features/auth/authApi";
+import { parseApiError } from "./errors";
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? "http://127.0.0.1:8000";
 
@@ -40,8 +41,8 @@ export async function apiFetch(path: string, init: RequestInit = {}) {
   }
 
   if (!res.ok) {
-    const txt = await res.text();
-    throw new Error(txt || `Request failed (${res.status})`);
+    const msg = await parseApiError(res);
+    throw new Error(msg || `Request failed (${res.status})`);
   }
 
   const contentType = res.headers.get("content-type") || "";

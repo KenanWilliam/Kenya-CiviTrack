@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -18,4 +17,3 @@ class ProjectViewSet(viewsets.ModelViewSet):
         qs = self.get_queryset().exclude(latitude__isnull=True).exclude(longitude__isnull=True)
         data = qs.values("id", "title", "status", "latitude", "longitude")
         return Response(list(data))
-

@@ -5,4 +5,6 @@ class IsOfficialOrAdminForWrite(BasePermission):
         if request.method in SAFE_METHODS:
             return True
         user = request.user
-        return user.is_authenticated and getattr(user, "role", "") in {"ADMIN", "OFFICIAL"}
+        return user.is_authenticated and (
+            getattr(user, "role", "") in {"ADMIN", "OFFICIAL"} or user.is_staff or user.is_superuser
+        )

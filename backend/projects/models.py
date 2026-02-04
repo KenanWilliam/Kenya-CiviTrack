@@ -1,3 +1,4 @@
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 class Project(models.Model):
@@ -14,7 +15,10 @@ class Project(models.Model):
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PLANNED)
 
     budget = models.DecimalField(max_digits=14, decimal_places=2, null=True, blank=True)
-    progress = models.PositiveSmallIntegerField(default=0)  # 0-100
+    progress = models.PositiveSmallIntegerField(
+        default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+    )  # 0-100
 
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)

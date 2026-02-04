@@ -1,6 +1,55 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { fetchPulse, trackSearch, type PulseData } from "../features/analytics/analyticsApi";
+import Card from "../components/ui/Card";
+import Button from "../components/ui/Button";
+import Input from "../components/ui/Input";
+import StatusPill from "../components/StatusPill";
+
+function Sparkline({ values }: { values: number[] }) {
+  if (values.length === 0) return null;
+  const max = Math.max(...values, 1);
+  const points = values.map((v, i) => {
+    const x = (i / (values.length - 1 || 1)) * 100;
+    const y = 30 - (v / max) * 30;
+    return `${x},${y}`;
+  });
+  return (
+    <svg viewBox="0 0 100 30" width="100%" height="30" aria-hidden>
+      <polyline
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="3"
+        points={points.join(" ")}
+      />
+    </svg>
+  );
+}
+
+function MiniBars({ values }: { values: number[] }) {
+  if (values.length === 0) return null;
+  const max = Math.max(...values, 1);
+  return (
+    <svg viewBox="0 0 100 40" width="100%" height="40" aria-hidden>
+      {values.map((v, i) => {
+        const width = 100 / values.length;
+        const height = (v / max) * 40;
+        return (
+          <rect
+            key={i}
+            x={i * width + 2}
+            y={40 - height}
+            width={width - 4}
+            height={height}
+            rx="4"
+            fill="currentColor"
+            opacity="0.7"
+          />
+        );
+      })}
+    </svg>
+  );
+}
 
 export default function ExplorePage() {
   const nav = useNavigate();
@@ -20,7 +69,7 @@ export default function ExplorePage() {
   function onSearch(e: React.FormEvent) {
     e.preventDefault();
     const term = q.trim();
-    trackSearch(term);
+    if (term) trackSearch(term);
     nav(`/projects${term ? `?q=${encodeURIComponent(term)}` : ""}`);
   }
 
@@ -30,151 +79,128 @@ export default function ExplorePage() {
     return Math.min(100, (pulse.total_spent / pulse.total_budget) * 100);
   }, [pulse]);
 
-  return (
-    <div>
-      <h2 className="pageTitle">Explore • Pulse</h2>
-      <div className="muted" style={{ marginBottom: 12 }}>
-        This page shows trends inside Kenya-CiviTrack (searches + views). External social feeds can be added later via official APIs.
-      </div>
+  const trendingCounts = pulse?.trending_projects_7d.map((item) => item.count) ?? [];
+  const searchCounts = pulse?.top_searches_7d.map((item) => item.count) ?? [];
 
-      <div className="card toolbar">
-        <form onSubmit={onSearch} style={{ display: "flex", gap: 10, flexWrap: "wrap", width: "100%" }}>
-          <div className="field" style={{ flex: 1, minWidth: 240 }}>
-            <span className="muted">Quick search</span>
-            <input
+  return (
+    <div className="page">
+      <div className="stack" style={{ gap: 18 }}>
+        <div>
+          <h2 className="sectionTitle">Explore • Pulse</h2>
+          <p className="muted">
+            Pulse shows internal trends from Kenya-CiviTrack. It’s your snapshot of what citizens are searching,
+            viewing, and reporting this week.
+          </p>
+        </div>
+
+        <Card className="stack reveal" style={{ padding: 18 }}>
+          <form onSubmit={onSearch} className="heroSearch">
+            <Input
+              className="heroInput"
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Try: Nairobi road, water, Turkana…"
+              placeholder="Search projects, counties, keywords…"
+              aria-label="Search projects"
             />
-          </div>
-          <button className="btn btnPrimary" type="submit">Search Projects</button>
-        </form>
-      </div>
+            <Button variant="primary" type="submit">Search Projects</Button>
+          </form>
+        </Card>
 
-      {!pulse ? (
-        <div className="card" style={{ padding: 14 }}>
-          <div className="muted">Pulse data not available yet. Trigger some searches and open a few project details, then refresh.</div>
-        </div>
-      ) : (
-        <>
-          <div className="grid" style={{ marginTop: 12 }}>
-            <div className="card col4" style={{ padding: 14 }}>
-              <div className="muted">Total projects</div>
-              <div style={{ fontSize: 22, fontWeight: 900, marginTop: 6 }}>{pulse.total_projects}</div>
-            </div>
-
-            <div className="card col4" style={{ padding: 14 }}>
+        {!pulse ? (
+          <Card className="emptyState">Pulse data not available yet. Trigger some searches and open projects.</Card>
+        ) : (
+          <div className="grid gridTwo">
+            <Card className="stack reveal" style={{ padding: 18 }}>
               <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <strong>Status breakdown</strong>
-                <Link className="muted" to="/projects">Open list</Link>
+                <strong>This week’s trending projects</strong>
+                <Link className="btn btnGhost" to="/projects">Open list</Link>
               </div>
-              <div style={{ marginTop: 10, display: "grid", gap: 8 }}>
-                {pulse.status_counts.slice(0, 5).map((s) => (
-                  <div key={s.status} className="miniRow">
-                    <div style={{ fontWeight: 800 }}>{(s.status || "UNKNOWN").toUpperCase()}</div>
-                    <span className="muted">{s.count}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="card col4" style={{ padding: 14 }}>
-              <strong>Budget usage</strong>
-              <div className="muted" style={{ marginTop: 6 }}>
-                Allocated total: {pulse.total_budget.toLocaleString()}
-              </div>
-              {pulse.total_spent == null ? (
-                <div className="muted" style={{ marginTop: 8 }}>
-                  Spent tracking will appear after Step 3.
-                </div>
-              ) : (
-                <>
-                  <div className="muted" style={{ marginTop: 6 }}>
-                    Spent: {pulse.total_spent.toLocaleString()}
-                  </div>
-                  <div className="progressBar" style={{ marginTop: 10 }}>
-                    <div className="progressFill" style={{ width: `${spentPct}%` }} />
-                  </div>
-                </>
-              )}
-            </div>
-
-            <div className="card col6" style={{ padding: 14 }}>
-              <strong>Trending searches</strong>
-              <div className="muted" style={{ marginTop: 6 }}>What people are looking up inside the app</div>
-              <div style={{ marginTop: 10, display: "grid", gap: 8 }}>
-                {pulse.top_searches.length === 0 ? (
-                  <div className="muted">No searches tracked yet.</div>
+              <MiniBars values={trendingCounts} />
+              <div className="stack">
+                {pulse.trending_projects_7d.length === 0 ? (
+                  <div className="muted">No views tracked in the last 7 days.</div>
                 ) : (
-                  pulse.top_searches.slice(0, 8).map((s) => (
-                    <div key={s.query} className="miniRow">
-                      <div style={{ fontWeight: 800 }}>{s.query}</div>
-                      <span className="muted">{s.count}</span>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-
-            <div className="card col6" style={{ padding: 14 }}>
-              <strong>Most viewed projects</strong>
-              <div className="muted" style={{ marginTop: 6 }}>What’s getting attention</div>
-              <div style={{ marginTop: 10, display: "grid", gap: 8 }}>
-                {pulse.top_viewed.length === 0 ? (
-                  <div className="muted">No project views tracked yet.</div>
-                ) : (
-                  pulse.top_viewed.slice(0, 8).map((p) => (
-                    <Link key={p.project_id} to={`/projects/${p.project_id}`} className="miniRow">
-                      <div>
-                        <div style={{ fontWeight: 900 }}>{p.project__title}</div>
-                        <div className="muted" style={{ fontSize: 12 }}>
-                          {p.project__county || "—"} • {(p.project__status || "").toUpperCase()}
+                  pulse.trending_projects_7d.map((p) => (
+                    <Link key={p.project_id} to={`/projects/${p.project_id}`} className="projectCardLink">
+                      <div className="card projectCard">
+                        <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
+                          <div>
+                            <strong>{p.project__title}</strong>
+                            <div className="projectMeta">{p.project__county || "County not set"}</div>
+                          </div>
+                          <StatusPill status={p.project__status} />
                         </div>
+                        <div className="muted" style={{ fontSize: 12 }}>{p.count} views</div>
                       </div>
-                      <span className="muted">{p.count} views</span>
                     </Link>
                   ))
                 )}
               </div>
-            </div>
+            </Card>
 
-            <div className="card col12" style={{ padding: 14 }}>
-              <strong>Recent activity</strong>
-              <div className="muted" style={{ marginTop: 6 }}>Latest searches + project opens (internal pulse)</div>
-
-              <div className="grid" style={{ marginTop: 10 }}>
-                <div className="col6">
-                  <div className="muted" style={{ marginBottom: 8 }}>Recent searches</div>
-                  <div style={{ display: "grid", gap: 8 }}>
-                    {pulse.recent_searches.map((s, idx) => (
-                      <div key={idx} className="miniRow">
-                        <div style={{ fontWeight: 800 }}>{s.query || "—"}</div>
-                        <span className="muted">search</span>
+            <div className="stack">
+              <Card className="stack reveal revealDelay1" style={{ padding: 18 }}>
+                <strong>Top searches (7 days)</strong>
+                <Sparkline values={searchCounts} />
+                <div className="stack">
+                  {pulse.top_searches_7d.length === 0 ? (
+                    <div className="muted">No searches yet.</div>
+                  ) : (
+                    pulse.top_searches_7d.map((s) => (
+                      <div key={s.query} className="card projectCard">
+                        <div style={{ display: "flex", justifyContent: "space-between" }}>
+                          <strong>{s.query}</strong>
+                          <span className="muted">{s.count}</span>
+                        </div>
                       </div>
-                    ))}
-                  </div>
+                    ))
+                  )}
                 </div>
+              </Card>
 
-                <div className="col6">
-                  <div className="muted" style={{ marginBottom: 8 }}>Recent project opens</div>
-                  <div style={{ display: "grid", gap: 8 }}>
-                    {pulse.recent_views.map((v, idx) => (
-                      <Link key={idx} to={`/projects/${v.project_id}`} className="miniRow">
-                        <div style={{ fontWeight: 900 }}>{v.project__title}</div>
-                        <span className="muted">view</span>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div className="muted" style={{ marginTop: 12 }}>
-                External “social mentions” can be integrated later (X/Reddit APIs) once credentials/policies are set.
-              </div>
+              <Card className="stack reveal revealDelay2" style={{ padding: 18 }}>
+                <strong>Budget usage (overall)</strong>
+                <div className="muted">Allocated: {pulse.total_budget.toLocaleString()}</div>
+                {pulse.total_spent == null ? (
+                  <div className="muted">Spent tracking will appear once reported.</div>
+                ) : (
+                  <>
+                    <div className="muted">Spent: {pulse.total_spent.toLocaleString()}</div>
+                    <div className="progressBar">
+                      <div className="progressFill" style={{ width: `${spentPct}%` }} />
+                    </div>
+                  </>
+                )}
+              </Card>
             </div>
+
+            <Card className="stack reveal" style={{ padding: 18 }}>
+              <strong>Public buzz (coming soon)</strong>
+              <p className="muted">
+                We’ll connect to public social APIs once credentials and policies are ready. Expect sentiment
+                snapshots, top mentions, and cross-platform highlights.
+              </p>
+              <div className="grid gridAuto">
+                <div className="card projectCard">
+                  <div className="muted">Source</div>
+                  <strong>X / Twitter</strong>
+                  <div className="muted">Awaiting API access</div>
+                </div>
+                <div className="card projectCard">
+                  <div className="muted">Source</div>
+                  <strong>Reddit</strong>
+                  <div className="muted">Placeholder module</div>
+                </div>
+                <div className="card projectCard">
+                  <div className="muted">Source</div>
+                  <strong>News</strong>
+                  <div className="muted">Integrate RSS feeds</div>
+                </div>
+              </div>
+            </Card>
           </div>
-        </>
-      )}
+        )}
+      </div>
     </div>
   );
 }

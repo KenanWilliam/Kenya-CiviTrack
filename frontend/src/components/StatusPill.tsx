@@ -1,4 +1,4 @@
-export default function StatusPill({ status }: { status: string }) {
+export default function StatusPill({ status }: { status?: string | null }) {
   const s = (status || "").toUpperCase();
 
   let cls = "pill";

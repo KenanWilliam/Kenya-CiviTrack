@@ -7,6 +7,7 @@ export type Project = {
   county?: string;
   status: string;
   budget?: string | null;
+  spent_amount?: string | null;
   progress: number;
   latitude?: string | null;
   longitude?: string | null;
